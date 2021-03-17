@@ -5,6 +5,7 @@ from data.news import News
 from data.users import User
 from forms.user import RegisterForm
 from forms.news import NewsForm
+from forms.addjob import AddJobForm
 from werkzeug.exceptions import abort
 from werkzeug.utils import redirect
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
@@ -152,10 +153,6 @@ def edit_news(id):
                            form=form
                            )
 
-def main():
-    db_session.global_init("db/blogs.db")
-    app.run(port=8080, host='127.0.0.1')
-
 @app.route('/news_delete/<int:id>', methods=['GET', 'POST'])
 @login_required
 def news_delete(id):
@@ -169,6 +166,27 @@ def news_delete(id):
     else:
         abort(404)
     return redirect('/')
+
+@app.route('/add_jobs', methods=['GET', 'POST'])
+@login_required
+def add_jobs():
+    form = AddJobForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        job = Jobs()
+        job.job = form.job.data
+        job.team_leader = form.team_leader.data
+        job.work_size = form.work_size.data
+        job.collaborators = form.collaborators.data
+        job.is_finished = form.is_finished.data
+        db_sess.add(job)
+        db_sess.commit()
+        return redirect('/')
+    return render_template('add_jobs.html', title='Добавление работы', form=form)
+
+def main():
+    db_session.global_init("db/blogs.db")
+    app.run(port=8080, host='127.0.0.1')
 
 if __name__ == '__main__':
     main()
