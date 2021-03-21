@@ -46,6 +46,13 @@
 	{% else %}
 		<td style="background:Salmon">{{item.is_finished}}</td></tr>
 	{% endif %}
+	{% if current_user.is_authenticated and (current_user == item.user or current_user.id == 1)%}
+    <div>
+        <a href="/add_jobs/{{ item.id }}" class="btn btn-warning">
+            Изменить
+        </a>
+    </div>
+	{% endif %}
 </table>
 {% endfor %}
 {% endblock %}

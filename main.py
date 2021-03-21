@@ -185,6 +185,41 @@ def add_jobs():
         return redirect('/')
     return render_template('add_jobs.html', title='Добавление работы', form=form)
 
+@app.route('/add_jobs/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_jobs(id):
+    form = AddJobForm()
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        jobs = db_sess.query(Jobs).filter((Jobs.id == id),
+                                          ((Jobs.user == current_user) | (current_user.id == 1))).first()
+        if jobs:
+            form.job.data = jobs.job
+            form.work_size.data = jobs.work_size
+            form.team_leader.data = jobs.team_leader
+            form.collaborators.data = jobs.collaborators
+            form.is_finished.data = jobs.is_finished
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        jobs = db_sess.query(Jobs).filter((Jobs.id == id),
+                                          ((Jobs.user == current_user) | (current_user.id == 1))).first()
+        if jobs:
+            jobs.job = form.job.data
+            jobs.work_size = form.work_size.data
+            jobs.team_leader = form.team_leader.data
+            jobs.collaborators = form.collaborators.data
+            jobs.is_finished = form.is_finished.data
+            db_sess.commit()
+            return redirect('/')
+        else:
+            abort(404)
+    return render_template('add_jobs.html',
+                           title='Редактирование новости',
+                           form=form
+                           )
+
 def main():
     db_session.global_init("db/blogs.db")
     app.run(port=8080, host='127.0.0.1')
